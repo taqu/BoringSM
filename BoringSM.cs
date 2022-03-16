@@ -153,7 +153,7 @@ namespace BoringSM
         /// <returns></returns>
         public int get()
         {
-            return current_;
+            return prev_;
         }
 
         /// <summary>
@@ -204,27 +204,6 @@ namespace BoringSM
         /// </summary>
         public void update()
         {
-            if(prev_ != current_) {
-                init();
-                if(null != stateInfos_[current_].proc_) {
-                    stateInfos_[current_].proc_(parent_);
-                }
-            } else if(null != stateInfos_[current_].proc_){
-                stateInfos_[current_].proc_(parent_);
-            }
-        }
-
-        private static Action<ParentType> createDelegate(Type type, string method)
-        {
-            MethodInfo methodInfo = type.GetMethod(method, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-            if(null == methodInfo) {
-                return null;
-            }
-            return Delegate.CreateDelegate(typeof(Action<ParentType>), methodInfo) as Action<ParentType>;
-        }
-
-        private void init()
-        {
             while(prev_ != current_) { //Loop until the two have the same value.
                 // Call termination
                 if(0<=prev_ && null != stateInfos_[prev_].term_) {
@@ -236,6 +215,18 @@ namespace BoringSM
                     stateInfos_[current_].init_(parent_);
                 }
             }
+            if(null != stateInfos_[current_].proc_){
+                stateInfos_[current_].proc_(parent_);
+            }
+        }
+
+        private static Action<ParentType> createDelegate(Type type, string method)
+        {
+            MethodInfo methodInfo = type.GetMethod(method, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            if(null == methodInfo) {
+                return null;
+            }
+            return Delegate.CreateDelegate(typeof(Action<ParentType>), methodInfo) as Action<ParentType>;
         }
     };
 }
